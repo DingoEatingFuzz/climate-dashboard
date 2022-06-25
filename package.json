@@ -1,0 +1,4 @@
+{
+  "private": true,
+  "workspaces": ["vega-lite", "visx", "db"]
+}
