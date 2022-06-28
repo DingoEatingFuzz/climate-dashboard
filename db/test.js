@@ -33,15 +33,15 @@ async function main() {
 
   const query = `
 SELECT
-  s.name, w.year, w.month, concat(round(avg(w.value)/10, 2), '° C')
+  s.name, strftime(date_trunc('month', w.date), '%B %Y'), concat(round(avg(w.value)/10, 2), '° C')
 FROM stations s
 LEFT JOIN weather w ON s.id = w.id
 WHERE
-  w.year = 2021 AND w.element = 'TAVG' AND w.value != -9999
+  w.element = 'TAVG' AND w.value != -9999 AND w.date > current_date - INTERVAL 1 YEAR
 GROUP BY
-  s.name, w.year, w.month
+  s.name, date_trunc('month', w.date)
 ORDER BY
-  s.name, w.month
+  s.name, date_trunc('month', w.date) DESC
 LIMIT 500;
   `;
 
@@ -78,6 +78,7 @@ function table(res) {
     const tr = document.createElement('tr');
     const cells = res.columns.map(col => {
       const cell = document.createElement('td');
+      if (row[col] instanceof Date) console.log('wat', row[col]);
       cell.append(row[col]);
       return cell;
     });
