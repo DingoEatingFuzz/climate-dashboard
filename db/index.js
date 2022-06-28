@@ -75,4 +75,100 @@ export default class DB {
     const query = this.query(table ? `DESCRIBE ${table}` : 'SHOW TABLES');
     return await query;
   }
+
+  // Queries for common charts
+
+  async stations() {
+    return await this.query('SELECT * FROM stations');
+  }
+
+  async monthlyAverageForStation(station) {
+    return await this.query(`
+      SELECT id, date_trunc('month', date), value, year, month
+      FROM weather
+      WHERE element = 'TAVG' AND id = ?::TEXT
+      GROUP BY date_trunc('month', date)
+      ORDER BY date_trunc('month', w.date)
+    `, station.id || station);
+  }
+
+  async weatherForStationForRange(station, start, end) {
+    return await this.query(`
+      SELECT *
+      FROM weather
+      WHERE id = ?::TEXT AND date >= ?::DATE AND date <= ?::DATE
+      ORDER BY date
+    `, station.id || station, start, end);
+  }
+
+  async averagesForStation(station) {
+    return await this.query(`
+      SELECT id, date_trunc('month', date), date_part('month', date), element, avg(value)
+      FROM weather
+      WHERE id = ?::TEXT AND element IN ('TAVG', 'PRCP')
+      GROUP BY date_trunc('month', date), element
+    `, station.id || station)
+  }
+
+  async weatherDetailByMonth(station) {
+    // TAVG
+    const temperatures = await this.query(`
+      SELECT id, date_trunc('month', date), date_part('month', date), element, avg(value) as average, list(value) as values
+      FROM weather
+      WHERE id = ?::TEXT AND element = 'TAVG'
+      GROUP BY date_trunc('month', date), element
+    `, station.id || station)
+
+    // PRCP
+    const rainfall = await this.query(`
+      SELECT id, date_trunc('month', date), date_part('month', date), element, sum(value) as total, list(value) as values
+      FROM weather
+      WHERE id = ?::TEXT AND element = 'PRCP'
+      GROUP BY date_trunc('month', date), element
+    `, station.id || station)
+
+    return {
+      columns: union(temperatures.columns, rainfall.columns),
+      rows: tableJoin(temperature.rows, rainfall.rows, 'id', { total: 'rainfall', values: 'rainValues' }),
+    };
+  }
+}
+
+function union(...arrs) {
+  const s = new Set();
+  arrs.forEach(arr => {
+    arr.forEach(val => {
+      s.add(val);
+    });
+  });
+
+  return Array.from(s);
+}
+
+// Adds columns from 'from' to 'dest' by joining on 'field' and using 'mapper' for column names
+function tableJoin(dest, from, field, mapper) {
+  const ir = hash(dest, field);
+  const maps = Object.entries(mapper);
+  from.forEach(row => {
+    const record = ir[row[id]];
+    if (record) {
+      maps.forEach(([key, value]) => {
+        record[value] = row[key];
+      });
+    }
+  });
+  return table(ir);
+}
+
+// Makes a has (object) of a table on a field for O(1) lookups
+function hash(table, field) {
+  return table.reduce((hash, row) => {
+    hash[row[field]] = row;
+    return hash;
+  }, {});
+}
+
+// Converts a hash back to a table (used with hash)
+function table(hash) {
+  return Object.values(hash);
 }
