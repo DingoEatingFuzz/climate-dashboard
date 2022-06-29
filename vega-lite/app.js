@@ -43,6 +43,7 @@ export default class App {
 
   setStation(id) {
     this.station = this.stations.rows.find(s => s.id === id);
+    this.renderMap();
     this.renderCharts();
   }
 
@@ -69,6 +70,7 @@ export default class App {
   }
 
   async renderMap() {
+    // TODO: Somehow bind a click event that can be handled outside the context of the Vega chart
     const map = await vl.layer(
         vl.markGeoshape({ fill: '#f0f0f0' })
           .data(vl.sphere()),
@@ -76,12 +78,25 @@ export default class App {
           .data(vl.graticule()),
         vl.markGeoshape({fill: '#ccc', stroke: '#706545', strokeWidth: 0.5})
           .data(vl.topojson(this.worldGeometry).feature('countries')),
-        vl.markCircle({ size: 8, opacity: 1 })
+        vl.markCircle({ size: 5, opacity: 1, fill: '#666' })
           .data(this.stations.rows)
+          .transform(vl.filter({ field: 'sampled', equal: false }))
           .encode(
             vl.longitude().fieldQ('lon'),
             vl.latitude().fieldQ('lat'),
-            vl.color().fieldN('sampled'),
+          ),
+        vl.markCircle({ size: 32, opacity: 1, color: '#3333FF', tooltip: { content: 'data' } })
+          .data(this.stations.rows)
+          .transform(vl.filter({ field: 'sampled', equal: true }))
+          .encode(
+            vl.longitude().fieldQ('lon'),
+            vl.latitude().fieldQ('lat'),
+          ),
+        vl.markPoint({ shape: 'triangle', color: '#FF00FF' })
+          .data([this.station])
+          .encode(
+            vl.longitude().fieldQ('lon'),
+            vl.latitude().fieldQ('lat'),
           )
       )
       .project(vl.projection('naturalEarth1'))
@@ -91,7 +106,11 @@ export default class App {
       .config({ view: { stroke : null } })
       .render();
 
-    this.el.querySelector('#map').appendChild(map);
+    const $map = this.el.querySelector('#map');
+    while ($map.childNodes.length) {
+      $map.removeChild($map.childNodes[0]);
+    }
+    $map.appendChild(map);
   }
 
   renderCharts() {
