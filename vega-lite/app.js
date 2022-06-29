@@ -69,6 +69,29 @@ export default class App {
   }
 
   async renderMap() {
+    const map = await vl.layer(
+        vl.markGeoshape({ fill: '#f0f0f0' })
+          .data(vl.sphere()),
+        vl.markGeoshape({ stroke: '#ddd', strokeWidth: 1 })
+          .data(vl.graticule()),
+        vl.markGeoshape({fill: '#ccc', stroke: '#706545', strokeWidth: 0.5})
+          .data(vl.topojson(this.worldGeometry).feature('countries')),
+        vl.markCircle({ size: 8, opacity: 1 })
+          .data(this.stations.rows)
+          .encode(
+            vl.longitude().fieldQ('lon'),
+            vl.latitude().fieldQ('lat'),
+            vl.color().fieldN('sampled'),
+          )
+      )
+      .project(vl.projection('naturalEarth1'))
+      .width(800)
+      .height(500)
+      .autosize({ type: 'fit-x', contains: 'padding' })
+      .config({ view: { stroke : null } })
+      .render();
+
+    this.el.querySelector('#map').appendChild(map);
   }
 
   renderCharts() {
