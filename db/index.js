@@ -79,7 +79,7 @@ export default class DB {
   // Queries for common charts
 
   async stations() {
-    return await this.query('SELECT * FROM stations');
+    return await this.query('SELECT * FROM stations ORDER BY name');
   }
 
   async monthlyAverageForStation(station) {
