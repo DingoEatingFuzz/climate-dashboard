@@ -112,30 +112,35 @@ export default class App {
   async renderCharts() {
     this.el.querySelector('#station').innerText = `${this.station.name} (elev: ${this.station.elevation}m)`;
 
+    this.timeseriesChart(this.el.querySelector('#timeseries'));
+  }
+
+  async timeseriesChart(el) {
     const monthlyWeather = await this.db.monthlyAverageForStation(this.station);
     const allWeather = await this.db.weatherForStationForRange(this.station);
 
+    const now = Date.now();
+    const days = n => n * 24 * 60 * 60 * 1000;
+    const brush = vl.selectInterval().encodings('x').value({ x: [now - days(365), now]});
+
     const timeseries = vl.layer(
       vl.markArea({ fill: '#666', opacity: 0.5 })
-        .data(allWeather.rows)
-        .transform(
-          vl.filter({ and: [{ field: 'element', oneOf: ['TMIN', 'TAVG',  'TMAX'] }, { field: 'value', gt: -9999 }] }),
-          vl.pivot('element').groupby(['date']).value('value'),
-        )
         .encode(
           vl.x().fieldT('date'),
           vl.y().fieldQ('TMAX'),
           vl.y2().fieldQ('TMIN'),
         ),
       vl.markLine()
-        .data(allWeather.rows)
-        .transform(
-          vl.filter({ and: [{ field: 'element', equal: 'TAVG' }, { field: 'value', gt: -9999 }] }),
-        )
         .encode(
           vl.x().fieldT('date'),
-          vl.y().fieldQ('value')
+          vl.y().fieldQ('TAVG')
         )
+    )
+    .data(allWeather.rows)
+    .transform(
+      vl.filter({ and: [{ field: 'element', oneOf: ['TMIN', 'TAVG',  'TMAX'] }, { field: 'value', gt: -9999 }] }),
+      vl.filter(brush),
+      vl.pivot('element').groupby(['date']).value('value'),
     )
     .width(1200)
     .height(400)
@@ -149,11 +154,11 @@ export default class App {
       )
       .width(1200)
       .height(100)
+      .params(brush)
       .autosize({ type: 'fit-x', contains: 'padding' });
 
-    const $timeseries = this.el.querySelector('#timeseries');
-    clearChildren($timeseries);
-    $timeseries.append(await vl.vconcat(timeseries, monthly).render());
+    clearChildren(el);
+    el.append(await vl.vconcat(timeseries, monthly).render());
   }
 }
 
