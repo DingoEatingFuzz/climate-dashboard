@@ -18,7 +18,7 @@ select {
   margin-bottom: 1rem;
 }
 
-#averages, #quantized, #map, #table {
+#quantized, #table {
   border: 1px solid gray;
 }
 

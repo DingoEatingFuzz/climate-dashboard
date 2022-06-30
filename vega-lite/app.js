@@ -1,6 +1,8 @@
 import DB from 'db';
 import * as vl from 'vega-lite-api';
 
+const days = n => n * 24 * 60 * 60 * 1000;
+
 export default class App {
   constructor(el) {
     this.el = el;
@@ -113,6 +115,7 @@ export default class App {
     this.el.querySelector('#station').innerText = `${this.station.name} (elev: ${this.station.elevation}m)`;
 
     this.timeseriesChart(this.el.querySelector('#timeseries'));
+    this.monthlyAveragesChart(this.el.querySelector('#averages'));
   }
 
   async timeseriesChart(el) {
@@ -120,7 +123,6 @@ export default class App {
     const allWeather = await this.db.weatherForStationForRange(this.station);
 
     const now = Date.now();
-    const days = n => n * 24 * 60 * 60 * 1000;
     const brush = vl.selectInterval().encodings('x').value({ x: [now - days(365), now]});
 
     const timeseries = vl.layer(
@@ -143,9 +145,8 @@ export default class App {
       vl.filter(brush),
       vl.pivot('element').groupby(['date']).value('value'),
     )
-    .width(1200)
+    .width(1150)
     .height(400)
-    .autosize({ type: 'fit-x', contains: 'padding' });
 
     const monthly = vl.markArea()
       .data(monthlyWeather.rows)
@@ -153,13 +154,33 @@ export default class App {
         vl.x().fieldT('date'),
         vl.y().fieldQ('value'),
       )
-      .width(1200)
+      .width(1150)
       .height(100)
       .params(brush)
-      .autosize({ type: 'fit-x', contains: 'padding' });
+
+    const composed = vl.vconcat(timeseries, monthly)
 
     clearChildren(el);
-    el.append(await vl.vconcat(timeseries, monthly).render());
+    el.append(await composed.render());
+  }
+
+  async monthlyAveragesChart(el) {
+    const averages = await this.db.averagesForStation(this.station);
+
+    // TODO: Use yOffset to unstack the two bars once the API bindings for VL 5.2 is released
+    const columnChart = vl.markBar({ tooltip: { content: 'data' } })
+      .data(averages.rows)
+      .encode(
+        vl.y().field('month'),
+        vl.x().fieldQ('value'),
+        vl.color().field('element'),
+      )
+      .width(370)
+      .height(470)
+      .autosize({ type: 'fit', contains: 'padding' });
+
+    clearChildren(el);
+    el.append(await columnChart.render());
   }
 }
 
