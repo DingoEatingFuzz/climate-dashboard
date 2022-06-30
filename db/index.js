@@ -37,8 +37,14 @@ export default class DB {
 
     // Create tables
     const conn = await this.db.connect();
-    await conn.query("CREATE VIEW weather AS SELECT * FROM parquet_scan('weather')");
-    await conn.query("CREATE VIEW stations AS SELECT * FROM parquet_scan('stations')");
+    await conn.query("CREATE TABLE weather AS SELECT * FROM parquet_scan('weather')");
+    await conn.query("CREATE TABLE stations AS SELECT * FROM parquet_scan('stations')");
+
+    // TODO: This should be correct in the parquet file
+    await conn.query("ALTER TABLE weather ALTER value TYPE INTEGER");
+    await conn.query("ALTER TABLE weather ALTER year TYPE INTEGER");
+    await conn.query("ALTER TABLE weather ALTER month TYPE INTEGER");
+    await conn.query("ALTER TABLE weather ALTER day TYPE INTEGER");
     await conn.close();
 
     this.ready = true;
