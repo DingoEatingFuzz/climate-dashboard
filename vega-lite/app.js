@@ -124,7 +124,7 @@ export default class App {
     const brush = vl.selectInterval().encodings('x').value({ x: [now - days(365), now]});
 
     const timeseries = vl.layer(
-      vl.markArea({ fill: '#666', opacity: 0.5 })
+      vl.markArea({ fill: '#99A6CC', opacity: 0.5, tooltip: true })
         .encode(
           vl.x().fieldT('date'),
           vl.y().fieldQ('TMAX'),
@@ -133,7 +133,8 @@ export default class App {
       vl.markLine()
         .encode(
           vl.x().fieldT('date'),
-          vl.y().fieldQ('TAVG')
+          vl.y().fieldQ('TAVG'),
+          vl.tooltip(['date', 'TMIN', 'TAVG', 'TMAX'])
         )
     )
     .data(allWeather.rows)
