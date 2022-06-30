@@ -1,4 +1,50 @@
+* {
+  box-sizing: border-box;
+}
+
 #app {
   max-width: 1200px;
   margin: auto;
+  font-family: sans-serif;
+}
+
+h1 {
+  margin-bottom: 0.3rem;
+}
+
+select {
+  border-color: #CCC;
+  padding: 5px;
+  margin-bottom: 1rem;
+}
+
+#averages, #quantized, #map, #table {
+  border: 1px solid gray;
+}
+
+#timeseries {
+  width: 100%;
+  height: 600px;
+  margin-bottom: 10px;
+}
+
+.flex-group {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+#averages, #quantized {
+  padding: 15px;
+  width: 33%;
+  height: 500px;
+}
+
+#map {
+  padding: 15px;
+  width: 67%;
+  height: 500px;
+}
+
+#table {
+  width: 67%;
 }
