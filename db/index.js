@@ -99,12 +99,13 @@ export default class DB {
   }
 
   async weatherForStationForRange(station, start, end) {
+    const args = [station.id || station, start, end].filter(v => v != null);
     return await this.query(`
       SELECT *
       FROM weather
-      WHERE id = ?::TEXT AND date >= ?::DATE AND date <= ?::DATE
+      WHERE id = ?::TEXT ${start ? 'AND date >= ?::DATE AND date <= ?::DATE' : ''}
       ORDER BY date
-    `, station.id || station, start, end);
+    `, ...args);
   }
 
   async averagesForStation(station) {
