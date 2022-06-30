@@ -90,11 +90,11 @@ export default class DB {
 
   async monthlyAverageForStation(station) {
     return await this.query(`
-      SELECT id, date_trunc('month', date), value, year, month
+      SELECT id, date_trunc('month', date) as date, avg(value) as value, first(year), first(month)
       FROM weather
-      WHERE element = 'TAVG' AND id = ?::TEXT
-      GROUP BY date_trunc('month', date)
-      ORDER BY date_trunc('month', w.date)
+      WHERE element = 'TAVG' AND id = ?::TEXT AND value != -9999
+      GROUP BY id, date_trunc('month', date)
+      ORDER BY date_trunc('month', date)
     `, station.id || station);
   }
 
