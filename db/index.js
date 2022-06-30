@@ -65,7 +65,7 @@ export default class DB {
     let result;
     if (params.length) {
       const statement = await conn.prepare(query);
-      result = statement.query(...params);
+      result = await statement.query(...params);
     } else {
       result = await conn.query(query);
     }
