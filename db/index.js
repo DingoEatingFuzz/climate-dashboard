@@ -110,10 +110,10 @@ export default class DB {
 
   async averagesForStation(station) {
     return await this.query(`
-      SELECT id, date_trunc('month', date), date_part('month', date), element, avg(value)
+      SELECT id, monthname(date) as month, element, avg(value) as value
       FROM weather
-      WHERE id = ?::TEXT AND element IN ('TAVG', 'PRCP')
-      GROUP BY date_trunc('month', date), element
+      WHERE id = ?::TEXT AND element IN ('TAVG', 'PRCP') AND value != -9999
+      GROUP BY id, monthname(date), element
     `, station.id || station)
   }
 
