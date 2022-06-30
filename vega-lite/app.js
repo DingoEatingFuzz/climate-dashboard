@@ -56,14 +56,12 @@ export default class App {
       <div class='header'>
         <h1 id='station'></h1>
         <select id='station-select'></select>
-        <div id='timeseries' />
-        <div id='timeseries-brush' />
+        <div id='timeseries'></div>
         <div class='flex-group'>
-          <div id='averages' />
-          <div id='quantized' />
-          <div id='map' />
-        </div>
-        <div id='table'>
+          <div id='averages'></div>
+          <div id='map'></div>
+          <div id='quantized'></div>
+          <div id='table'></div>
         </div>
       </div>
     `;
@@ -100,20 +98,67 @@ export default class App {
           )
       )
       .project(vl.projection('naturalEarth1'))
-      .width(800)
-      .height(500)
+      .width(770)
+      .height(470)
       .autosize({ type: 'fit-x', contains: 'padding' })
       .config({ view: { stroke : null } })
       .render();
 
     const $map = this.el.querySelector('#map');
-    while ($map.childNodes.length) {
-      $map.removeChild($map.childNodes[0]);
-    }
+    clearChildren($map);
     $map.appendChild(map);
   }
 
-  renderCharts() {
+  async renderCharts() {
     this.el.querySelector('#station').innerText = `${this.station.name} (elev: ${this.station.elevation}m)`;
+
+    const monthlyWeather = await this.db.monthlyAverageForStation(this.station);
+    const allWeather = await this.db.weatherForStationForRange(this.station);
+
+    const timeseries = vl.layer(
+      vl.markArea({ fill: '#666', opacity: 0.5 })
+        .data(allWeather.rows)
+        .transform(
+          vl.filter({ and: [{ field: 'element', oneOf: ['TMIN', 'TAVG',  'TMAX'] }, { field: 'value', gt: -9999 }] }),
+          vl.pivot('element').groupby(['date']).value('value'),
+        )
+        .encode(
+          vl.x().fieldT('date'),
+          vl.y().fieldQ('TMAX'),
+          vl.y2().fieldQ('TMIN'),
+        ),
+      vl.markLine()
+        .data(allWeather.rows)
+        .transform(
+          vl.filter({ and: [{ field: 'element', equal: 'TAVG' }, { field: 'value', gt: -9999 }] }),
+        )
+        .encode(
+          vl.x().fieldT('date'),
+          vl.y().fieldQ('value')
+        )
+    )
+    .width(1200)
+    .height(400)
+    .autosize({ type: 'fit-x', contains: 'padding' });
+
+    const monthly = vl.markArea()
+      .data(monthlyWeather.rows)
+      .encode(
+        vl.x().fieldT('date'),
+        vl.y().fieldQ('value'),
+      )
+      .width(1200)
+      .height(100)
+      .autosize({ type: 'fit-x', contains: 'padding' });
+
+    const $timeseries = this.el.querySelector('#timeseries');
+    clearChildren($timeseries);
+    $timeseries.append(await vl.vconcat(timeseries, monthly).render());
+  }
+}
+
+function clearChildren(el) {
+  while (el.childNodes.length) {
+    el.removeChild(el.childNodes[0]);
   }
 }
