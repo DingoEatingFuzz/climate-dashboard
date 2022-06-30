@@ -19,7 +19,7 @@ export default class App {
     this.ready();
 
     this.stations = await this.db.stations();
-    this.station = this.stations.rows[0];
+    this.station = this.stations.rows.filter(s => s.sampled)[0];
     this.populateFilters();
 
     this.renderMap();
@@ -27,7 +27,7 @@ export default class App {
   }
 
   populateFilters() {
-    const $stations = this.stations.rows.map(station => {
+    const $stations = this.stations.rows.filter(s => s.sampled).map(station => {
       const $station = document.createElement('option');
       $station.append(station.name);
       $station.value = station.id;
