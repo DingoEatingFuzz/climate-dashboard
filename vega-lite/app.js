@@ -116,6 +116,7 @@ export default class App {
 
     this.timeseriesChart(this.el.querySelector('#timeseries'));
     this.monthlyAveragesChart(this.el.querySelector('#averages'));
+    this.quantizedChart(this.el.querySelector('#quantized'));
   }
 
   async timeseriesChart(el) {
@@ -181,6 +182,39 @@ export default class App {
 
     clearChildren(el);
     el.append(await columnChart.render());
+  }
+
+  async quantizedChart(el) {
+    // TODO: these should be user-settable
+    const start = Date.now() - days(365);
+    const end = Date.now();
+
+    const quantize = (val, samples) => {
+      for (let i = 0; i < samples.length; i++) {
+        if (val < samples[i]) return i;
+      }
+      return samples.length;
+    }
+
+    const data = await this.db.weatherForStationForRange(this.station, new Date(start), new Date(end));
+    const samples = [0, 100, 200, 300, 400];
+    const quantized = data.rows.filter(r => r.element === 'TAVG').map(row => ({
+      ...row,
+      bracket: quantize(row.value, samples),
+    }));
+
+    const donutChart = vl.markArc({ innerRadius: 50 })
+      .data(quantized)
+      .encode(
+        vl.theta().field('value').aggregate('count'),
+        vl.color().fieldN('bracket'),
+      )
+      .width(370)
+      .height(470)
+      .autosize({ type: 'fit', contains: 'padding' })
+
+    clearChildren(el);
+    el.append(await donutChart.render());
   }
 }
 
