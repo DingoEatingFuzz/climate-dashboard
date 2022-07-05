@@ -18,7 +18,7 @@ select {
   margin-bottom: 1rem;
 }
 
-#quantized, #table {
+#table {
   border: 1px solid gray;
 }
 

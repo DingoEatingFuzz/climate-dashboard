@@ -198,19 +198,27 @@ export default class App {
 
     const data = await this.db.weatherForStationForRange(this.station, new Date(start), new Date(end));
     const samples = [0, 100, 200, 300, 400];
+    const bracketLabels = ['<0', '0-10', '10-20', '20-30', '30-40', '>40'];
     const quantized = data.rows.filter(r => r.element === 'TAVG').map(row => ({
       ...row,
-      bracket: quantize(row.value, samples),
+      bracket: bracketLabels[quantize(row.value, samples)],
     }));
 
-    const donutChart = vl.markArc({ innerRadius: 50 })
+    const donutChart = vl.layer(
+        vl.markArc({ outerRadius: 130, innerRadius: 80 }),
+        vl.markText({ radius: 140 })
+          .encode(vl.text().field('count'))
+      )
       .data(quantized)
+      .transform(
+        vl.groupby('bracket').aggregate(vl.count('value').as('count'))
+      )
       .encode(
-        vl.theta().field('value').aggregate('count'),
-        vl.color().fieldN('bracket'),
+        vl.theta().stack(true).fieldQ('count'),
+        vl.color().fieldN('bracket').scale({ domain: bracketLabels })
       )
       .width(370)
-      .height(470)
+      .height(370)
       .autosize({ type: 'fit', contains: 'padding' })
 
     clearChildren(el);
