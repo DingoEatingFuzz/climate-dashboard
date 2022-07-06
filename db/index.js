@@ -120,23 +120,25 @@ export default class DB {
   async weatherDetailByMonth(station) {
     // TAVG
     const temperatures = await this.query(`
-      SELECT id, date_trunc('month', date), date_part('month', date), element, avg(value) as average, list(value) as values
+      SELECT id, date_trunc('month', date) as date, element, avg(value) as average, list(value) as values
       FROM weather
-      WHERE id = ?::TEXT AND element = 'TAVG'
-      GROUP BY date_trunc('month', date), element
+      WHERE id = ?::TEXT AND element = 'TAVG' AND value != -9999
+      GROUP BY id, date_trunc('month', date), element
+      ORDER BY date
     `, station.id || station)
 
     // PRCP
     const rainfall = await this.query(`
-      SELECT id, date_trunc('month', date), date_part('month', date), element, sum(value) as total, list(value) as values
+      SELECT id, date_trunc('month', date) as date, element, sum(value) as total, list(value) as values
       FROM weather
-      WHERE id = ?::TEXT AND element = 'PRCP'
-      GROUP BY date_trunc('month', date), element
+      WHERE id = ?::TEXT AND element = 'PRCP' AND value != -9999
+      GROUP BY id, date_trunc('month', date), element
+      ORDER BY date
     `, station.id || station)
 
     return {
       columns: union(temperatures.columns, rainfall.columns),
-      rows: tableJoin(temperature.rows, rainfall.rows, 'id', { total: 'rainfall', values: 'rainValues' }),
+      rows: tableJoin(temperatures.rows, rainfall.rows, 'date', { total: 'rainfall', values: 'rainValues' }),
     };
   }
 }
@@ -157,7 +159,7 @@ function tableJoin(dest, from, field, mapper) {
   const ir = hash(dest, field);
   const maps = Object.entries(mapper);
   from.forEach(row => {
-    const record = ir[row[id]];
+    const record = ir[row[field]];
     if (record) {
       maps.forEach(([key, value]) => {
         record[value] = row[key];
@@ -167,15 +169,20 @@ function tableJoin(dest, from, field, mapper) {
   return table(ir);
 }
 
-// Makes a has (object) of a table on a field for O(1) lookups
+// Makes a hash of a table on a field for O(1) lookups
 function hash(table, field) {
-  return table.reduce((hash, row) => {
-    hash[row[field]] = row;
-    return hash;
-  }, {});
+  const obj = {}
+  const keys = [];
+  table.forEach(row => {
+    obj[row[field]] = row;
+    keys.push(''+row[field]);
+  });
+  obj.keys = keys;
+  return obj;
 }
 
 // Converts a hash back to a table (used with hash)
 function table(hash) {
-  return Object.values(hash);
+  if (!hash.keys) throw "Provided hash is not a result of hash(table, field)";
+  return hash.keys.map(k => hash[k]);
 }
