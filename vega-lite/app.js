@@ -250,14 +250,55 @@ export default class App {
     const thead = document.createElement('thead');
     thead.append(row('Month', 'Year', 'Total Rainfall', 'Avg. Temperature', 'Rainfall', 'Temperature'));
     table.append(thead);
-    filteredData.forEach(record => {
+
+    const sparklines = filteredData.map(record => {
+      const sparklineConfig = { title: null, domain: false, labels: false, ticks: false, grid: false };
+      const rainfallChart = vl.markArea({ tooltip: true })
+        .data(Array.from(record.rainValues || []).map((y, x) => ({ x, y })))
+        .encode(
+          vl.y().fieldQ('y').axis(sparklineConfig),
+          vl.x().field('x').axis(sparklineConfig)
+        )
+        .width(150)
+        .height(20)
+        .config({
+          view: { stroke: 'transparent' },
+          area: {
+            line: { color: 'blue', strokeWidth: 1 },
+            fill: 'rgba(0,0,255,0.3)',
+          }
+        });
+
+      const avgTemperatureChart = vl.markArea({ tooltip: true })
+        .data(Array.from(record.values || []).map((y, x) => ({ x, y })))
+        .encode(
+          vl.y().fieldQ('y').axis(sparklineConfig),
+          vl.x().field('x').axis(sparklineConfig)
+        )
+        .width(150)
+        .height(20)
+        .config({
+          view: { stroke: 'transparent' },
+          area: {
+            line: { color: 'red', strokeWidth: 1 },
+            fill: 'rgba(255,0,0,0.3)',
+          }
+        });
+
+      return [rainfallChart.render(), avgTemperatureChart.render()];
+    });
+
+    // Don't block on every chart sequentially
+    const renderedCharts = await Promise.all(sparklines.flat());
+
+    filteredData.forEach((record, idx) => {
       const tr = row(
         record.date.toLocaleString('default', { month: 'long' }),
         record.date.toLocaleString('default', { year: 'numeric' }),
         record.rainfall ? (BigInt.asIntN(32, record.rainfall) / 10n).toLocaleString('default', { maximumFractionDigits: 2 }) + 'mm' : '--',
         (record.average / 10).toLocaleString('default', { maximumFractionDigits: 2 }) + '° C',
-        '', // rainfall chart
-        '', // temperature chart
+        renderedCharts[idx*2],
+        renderedCharts[idx*2+1],
       )
       table.append(tr);
     });
