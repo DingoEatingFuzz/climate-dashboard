@@ -1,5 +1,6 @@
 import DB from 'db';
 import * as vl from 'vega-lite-api';
+import { bisectLeft, bisectRight } from './bisect';
 
 const days = n => n * 24 * 60 * 60 * 1000;
 
@@ -117,6 +118,7 @@ export default class App {
     this.timeseriesChart(this.el.querySelector('#timeseries'));
     this.monthlyAveragesChart(this.el.querySelector('#averages'));
     this.quantizedChart(this.el.querySelector('#quantized'));
+    this.dataTable(this.el.querySelector('#table'));
   }
 
   async timeseriesChart(el) {
@@ -223,6 +225,45 @@ export default class App {
 
     clearChildren(el);
     el.append(await donutChart.render());
+  }
+
+  async dataTable(el) {
+    // TODO: these should be user-settable
+    const start = Date.now() - days(365 * 3);
+    const end = Date.now();
+
+    const data = await this.db.weatherDetailByMonth(this.station);
+    const comparator = (row, date) => +row.date - date;
+    const filteredData = bisectRight(bisectLeft(data.rows, end, comparator), start, comparator);
+
+    const row = (...cells) => {
+      const tr = document.createElement('tr');
+      tr.append(...cells.map(cell => {
+        const td = document.createElement('td');
+        td.append(cell);
+        return td;
+      }));
+      return tr;
+    }
+
+    const table = document.createElement('table');
+    const thead = document.createElement('thead');
+    thead.append(row('Month', 'Year', 'Total Rainfall', 'Avg. Temperature', 'Rainfall', 'Temperature'));
+    table.append(thead);
+    filteredData.forEach(record => {
+      const tr = row(
+        record.date.toLocaleString('default', { month: 'long' }),
+        record.date.toLocaleString('default', { year: 'numeric' }),
+        record.rainfall ? (BigInt.asIntN(32, record.rainfall) / 10n).toLocaleString('default', { maximumFractionDigits: 2 }) + 'mm' : '--',
+        (record.average / 10).toLocaleString('default', { maximumFractionDigits: 2 }) + '° C',
+        '', // rainfall chart
+        '', // temperature chart
+      )
+      table.append(tr);
+    });
+
+    clearChildren(el);
+    el.append(table);
   }
 }
 
