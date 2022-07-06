@@ -18,8 +18,19 @@ select {
   margin-bottom: 1rem;
 }
 
-#table {
-  border: 1px solid gray;
+#table table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+#table thead td {
+  font-weight: bold;
+  border-bottom: 1px solid black;
+}
+
+#table td {
+  border: 1px solid #CCC;
+  padding: 8px;
 }
 
 #timeseries {
