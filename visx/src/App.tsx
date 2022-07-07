@@ -15,9 +15,10 @@ function App() {
   useEffect(() => {
     const dbCall = async () => {
       if (!db.ready) await db.init();
-      setStations(await db.stations());
+      const dbStations = await db.stations();
+      setStations(dbStations);
       if (!station) {
-        setStation(stations?.rows.filter(s => s.sampled)[0]);
+        setStation(dbStations?.rows.filter(s => s.sampled)[0]);
       }
     };
 
