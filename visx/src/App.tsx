@@ -1,8 +1,6 @@
 import { useState, useEffect } from 'react'
 import './App.css'
-import DB from 'db';
-
-const db = new DB();
+import { dbEffect } from './db-effect'
 
 function App() {
   const [station, setStation] = useState<Station | undefined>(undefined)
@@ -12,18 +10,13 @@ function App() {
     return stations?.rows.find(s => s.id === id);
   }
 
-  useEffect(() => {
-    const dbCall = async () => {
-      if (!db.ready) await db.init();
-      const dbStations = await db.stations();
-      setStations(dbStations);
-      if (!station) {
-        setStation(dbStations?.rows.filter(s => s.sampled)[0]);
-      }
-    };
-
-    dbCall().catch(console.error);
-  }, []);
+  dbEffect(async (db:DB) => {
+    const dbStations = await db.stations();
+    setStations(dbStations);
+    if (!station){
+      setStation(dbStations?.rows.filter(s => s.sampled)[0]);
+    }
+  }, [])
 
   return (
     <div className="App">
