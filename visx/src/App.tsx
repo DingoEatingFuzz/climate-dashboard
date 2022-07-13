@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import './App.css'
 import { dbEffect } from './db-effect'
+import { appWrapper, header, stationSelect } from './styles.css'
 
 function App() {
   const [station, setStation] = useState<Station | undefined>(undefined)
@@ -19,10 +20,10 @@ function App() {
   }, [])
 
   return (
-    <div className="App">
+    <div className={appWrapper}>
       <div className="Header">
-        <h1>{station?.name}</h1>
-        <select onChange={e => setStation(stationForId(e.target.value))}>
+        <h1 className={header}>{station?.name}</h1>
+        <select className={stationSelect} onChange={e => setStation(stationForId(e.target.value))}>
           {stations && stations.rows.filter(s => s.sampled).map(s => (
             <option key={s.id} value={s.id}>{s.name}</option>
           ))}

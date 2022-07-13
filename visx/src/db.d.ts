@@ -1,4 +1,6 @@
-declare class Station {
+declare interface IDuckRecord {};
+
+declare class Station implements IDuckRecord {
   id: string;
   lat: Number;
   lon: Number;
