@@ -1,5 +1,12 @@
 declare interface IDuckRecord {};
 
+declare enum Element {
+  TAVG = 'TAVG',
+  TMIN = 'TMIN',
+  TMAX = 'TMAX',
+  PRCP = 'PRCP',
+}
+
 declare class Station implements IDuckRecord {
   id: string;
   lat: Number;
@@ -12,6 +19,16 @@ declare class Station implements IDuckRecord {
   crn: boolean;
   wmo: Number;
   sampled: boolean;
+}
+
+declare class Weather implements IDuckRecord {
+  id: string;
+  year: Number;
+  month: Number
+  day: Number;
+  date: Date;
+  element: Element;
+  value: Number;
 }
 
 declare type DuckResult<Type> = {
@@ -31,7 +48,7 @@ declare class DB {
   public describe(table:string|undefined): Promise<DuckResult>;
   public stations(): Promise<DuckResult<Station>>;
   public monthlyAverageForStation(station:Station|string): Promise<DuckResult>;
-  public weatherForStationForRange(station:Station|string, start:Date, end:Date): Promise<DuckResult>;
+  public weatherForStationForRange(station:Station|string, start?:Date, end?:Date): Promise<DuckResult>;
   public averagesForStation(station:Station|string): Promise<DuckResult>;
   public weatherDetailByMonth(station:Station|string): Promise<DuckResult>;
 }

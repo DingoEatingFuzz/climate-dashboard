@@ -15,3 +15,9 @@ export const stationSelect = style({
 export const header = style({
   marginBottom: '0.3rem',
 });
+
+export const timeseries = style({
+  width: '100%',
+  height: 400,
+  border: '1px solid gray',
+});

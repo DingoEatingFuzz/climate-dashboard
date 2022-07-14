@@ -1,11 +1,14 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import './App.css'
 import { dbEffect } from './db-effect'
 import { appWrapper, header, stationSelect } from './styles.css'
+import TimeSeries from './TimeSeries'
 
 function App() {
   const [station, setStation] = useState<Station | undefined>(undefined)
   const [stations, setStations] = useState<DuckResult<Station> | undefined>(undefined)
+  const [start, setStart] = useState<Date | undefined>(undefined)
+  const [end, setEnd] = useState<Date | undefined>(undefined)
 
   const stationForId = (id: string):Station|undefined => {
     return stations?.rows.find(s => s.id === id);
@@ -29,7 +32,7 @@ function App() {
           ))}
         </select>
       </div>
-      {/* <TimeSeries station={station} start={start} end={end} /> */}
+      <TimeSeries station={station} start={start} end={end} />
       <div className="FlexGroup">
         {/* <Averages station={station} start={start} end={end} /> */}
         {/* <Map station={station} /> */}
