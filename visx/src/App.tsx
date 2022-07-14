@@ -32,7 +32,10 @@ function App() {
           ))}
         </select>
       </div>
-      <TimeSeries station={station} start={start} end={end} />
+      <TimeSeries station={station} start={start} end={end} onDateRangeSelect={(start, end) => {
+        setStart(start);
+        setEnd(end);
+      }}/>
       <div className="FlexGroup">
         {/* <Averages station={station} start={start} end={end} /> */}
         {/* <Map station={station} /> */}

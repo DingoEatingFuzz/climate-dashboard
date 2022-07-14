@@ -1,9 +1,8 @@
-import { useState, useContext, useMemo } from 'react'
+import { useState, useContext, useRef, useMemo } from 'react'
 import {
-  AnimatedAxis,
-  AnimatedGrid,
-  AnimatedLineSeries,
-  AnimatedAreaSeries,
+  Axis,
+  Grid,
+  LineSeries,
   AreaSeries,
   DataContext,
   XYChart,
@@ -11,12 +10,13 @@ import {
   lightTheme
 } from '@visx/xychart';
 import { Brush } from '@visx/brush';
+import { Bounds } from '@visx/brush/lib/types';
 import { ParentSize } from '@visx/responsive';
 import { scaleTime, scaleLinear } from '@visx/scale';
 import { AxisBottom } from '@visx/axis';
 import { Group } from '@visx/group';
 import { AreaClosed } from '@visx/shape';
-import { group, extent, max, InternMap } from 'd3-array';
+import { group, extent, max, bisector, InternMap } from 'd3-array';
 import { dbEffect } from './db-effect'
 import { timeseries } from './styles.css'
 
@@ -24,11 +24,13 @@ interface TimeSeriesProps {
   station: Station|undefined;
   start?: Date|undefined;
   end?: Date|undefined;
+  onDateRangeSelect?: Function;
 }
 
 interface XYBrushProps<T> {
   data: DuckResult<T>|undefined,
   width: number,
+  onDateRangeSelect?: Function;
 }
 
 interface PivotedWeather {
@@ -60,7 +62,9 @@ const nullify = (arr: any, key: string, value: any):any => {
   return arr;
 }
 
-const TimeSeriesBrush = ({ data, width }:XYBrushProps<Weather>) => {
+const TimeSeriesBrush = ({ data, width, onDateRangeSelect }:XYBrushProps<Weather>) => {
+  const brushRef = useRef(null);
+
   const brushColor = '#99AACC';
   const brushHeight = 100;
   const axisHeight = 25;
@@ -90,13 +94,27 @@ const TimeSeriesBrush = ({ data, width }:XYBrushProps<Weather>) => {
       height={brushHeight-axisHeight}
       handleSize={8}
       resizeTriggerAreas={['left', 'right']}
+      innerRef={brushRef}
+      onChange={(domain: Bounds | null) => {
+        if (!domain) return;
+        if (onDateRangeSelect) {
+          onDateRangeSelect(new Date(domain.x0), new Date(domain.x1));
+        }
+      }}
+      onClick={() => {
+        if (onDateRangeSelect) {
+          onDateRangeSelect();
+        }
+      }}
+      useWindowMoveEvents
     />
   </svg>
 }
 
-export default function TimeSeries({ station, start, end }:TimeSeriesProps) {
+export default function TimeSeries({ station, start, end, onDateRangeSelect }:TimeSeriesProps) {
   const [monthlyWeather, setMonthlyWeather] = useState<DuckResult<Weather> | undefined>(undefined);
   const [allWeather, setAllWeather] = useState<DuckResult<Weather> | undefined>(undefined);
+
   const pivotedWeather = useMemo<PivotedWeather[]>(() => {
     if (!allWeather) return [];
     const pivoted = pivot(
@@ -104,6 +122,13 @@ export default function TimeSeries({ station, start, end }:TimeSeriesProps) {
     );
     return pivoted;
   }, [allWeather]);
+
+  const filteredWeather = useMemo<PivotedWeather[]>(() => {
+    const bisect = bisector((d:PivotedWeather) => d.date);
+    const startIdx = start ? bisect.left(pivotedWeather, start) : 0;
+    const endIdx = end ? bisect.right(pivotedWeather, end) : undefined;
+    return pivotedWeather.slice(startIdx, endIdx);
+  }, [pivotedWeather, start, end]);
 
   dbEffect(async (db:DB) => {
     if (station) {
@@ -119,27 +144,31 @@ export default function TimeSeries({ station, start, end }:TimeSeriesProps) {
 
   return (
     <div className={timeseries}>
-      <XYChart height={400} {...scales} margin={{bottom:100, top:0, right:0, left:0}}>
-        <AnimatedAxis orientation='bottom' numTicks={10} />
-        <AnimatedAxis orientation='left' />
-        <AnimatedGrid columns={false} numTicks={4} />
-        <AnimatedAreaSeries
+      <XYChart height={400} {...scales}>
+        <Axis orientation='bottom' numTicks={10} />
+        <Axis orientation='left' />
+        <Grid columns={false} numTicks={4} />
+        <AreaSeries
           dataKey='High/Low Band'
-          data={pivotedWeather}
+          data={filteredWeather}
           xAccessor={d => d.date}
           yAccessor={d => d.TMAX}
           y0Accessor={d => d.TMIN}
         />
-        <AnimatedLineSeries
+        <LineSeries
           dataKey='Avg Line'
-          data={pivotedWeather}
+          data={filteredWeather}
           xAccessor={d => d.date}
           yAccessor={d => d.TAVG}
         />
       </XYChart>
       <ParentSize>
         {parent => (
-          <TimeSeriesBrush width={parent.width} data={monthlyWeather} />
+          <TimeSeriesBrush
+            width={parent.width}
+            data={monthlyWeather}
+            onDateRangeSelect={onDateRangeSelect}
+          />
         )}
       </ParentSize>
     </div>
