@@ -18,11 +18,29 @@ function qualifyURL(url) {
 
 export default class DB {
   ready = false;
+  #initializing = false;
+  #initPromise = null;
   #counter = 0;
 
   constructor() {}
 
   async init() {
+    if (this.ready) {
+      console.warn('Database has already been made. Avoid calling `init` twice');
+      return;
+    }
+    if (this.#initializing) {
+      console.warn('Database is currently being made. Possibly a race condition in your app?');
+      return await this.#initPromise;
+    }
+
+    this.#initPromise = this._init();
+    return await this.#initPromise;
+  }
+
+  async _init() {
+    this.#initializing = true;
+
     // Create the database
     this.db = await makeDB();
     await this.db.open({
@@ -48,6 +66,7 @@ export default class DB {
     await conn.close();
 
     this.ready = true;
+    this.#initializing = false;
   }
 
   async connection() {
