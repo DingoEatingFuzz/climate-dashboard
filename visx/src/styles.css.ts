@@ -18,6 +18,4 @@ export const header = style({
 
 export const timeseries = style({
   width: '100%',
-  height: 400,
-  border: '1px solid gray',
 });

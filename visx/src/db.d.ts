@@ -28,7 +28,7 @@ declare class Weather implements IDuckRecord {
   day: Number;
   date: Date;
   element: Element;
-  value: Number;
+  value: number;
 }
 
 declare type DuckResult<Type> = {
