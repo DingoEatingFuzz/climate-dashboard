@@ -19,3 +19,18 @@ export const header = style({
 export const timeseries = style({
   width: '100%',
 });
+
+export const timeseriesTooltip = style({
+  display: 'grid',
+  gridGap: '10px',
+  gridTemplateColumns: 'min-content',
+});
+
+export const timeseriesTooltipDt = style({
+  gridColumn: 1,
+});
+
+export const timeseriesTooltipDd = style({
+  gridColumn: 2,
+  fontWeight: 'normal',
+});

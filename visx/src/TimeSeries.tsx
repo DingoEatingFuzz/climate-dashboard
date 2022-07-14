@@ -14,11 +14,10 @@ import { Bounds } from '@visx/brush/lib/types';
 import { ParentSize } from '@visx/responsive';
 import { scaleTime, scaleLinear } from '@visx/scale';
 import { AxisBottom } from '@visx/axis';
-import { Group } from '@visx/group';
 import { AreaClosed } from '@visx/shape';
-import { group, extent, max, bisector, InternMap } from 'd3-array';
+import { group, extent, bisector, InternMap } from 'd3-array';
 import { dbEffect } from './db-effect'
-import { timeseries } from './styles.css'
+import { timeseries, timeseriesTooltip, timeseriesTooltipDt, timeseriesTooltipDd } from './styles.css'
 
 interface TimeSeriesProps {
   station: Station|undefined;
@@ -35,11 +34,16 @@ interface XYBrushProps<T> {
 
 interface PivotedWeather {
   date: Date;
-  TMIN?: Number;
-  TMAX?: Number;
-  TAVG?: Number;
-  PRCP?: Number;
+  TMIN?: number;
+  TMAX?: number;
+  TAVG?: number;
+  PRCP?: number;
 }
+
+const formatDate = (date:Date) => new Intl.DateTimeFormat().format(date);
+const formatTemperature = (temp:number|undefined) => temp == null
+  ? '--'
+  : (temp / 10).toLocaleString('default', { maximumFractionDigits: 2 }) + '° C';
 
 const pivot = (map: InternMap, key: string, on: string, rename: string):any => {
   return Array.from(map.keys()).reduce((arr:object[], idx:any) => {
@@ -160,6 +164,27 @@ export default function TimeSeries({ station, start, end, onDateRangeSelect }:Ti
           data={filteredWeather}
           xAccessor={d => d.date}
           yAccessor={d => d.TAVG}
+        />
+        <Tooltip<PivotedWeather>
+          showVerticalCrosshair
+          snapTooltipToDatumX
+          renderTooltip={({ tooltipData }) => (
+            <>
+              { tooltipData?.nearestDatum?.datum ? (
+                <>
+                <h4>{formatDate(tooltipData.nearestDatum.datum.date)}</h4>
+                <dl className={timeseriesTooltip}>
+                  <dt className={timeseriesTooltipDt}>Min:</dt>
+                  <dd className={timeseriesTooltipDd}>{formatTemperature(tooltipData.nearestDatum.datum.TMIN)}</dd>
+                  <dt className={timeseriesTooltipDt}>Avg:</dt>
+                  <dd className={timeseriesTooltipDd}>{formatTemperature(tooltipData.nearestDatum.datum.TAVG)}</dd>
+                  <dt className={timeseriesTooltipDt}>Max:</dt>
+                  <dd className={timeseriesTooltipDd}>{formatTemperature(tooltipData.nearestDatum.datum.TMAX)}</dd>
+                </dl>
+                </>
+              ) : (<em>No Data</em>) }
+            </>
+          )}
         />
       </XYChart>
       <ParentSize>
