@@ -7,7 +7,7 @@ import {
   DataContext,
   XYChart,
   Tooltip,
-  lightTheme
+  buildChartTheme
 } from '@visx/xychart';
 import { Brush } from '@visx/brush';
 import { Bounds } from '@visx/brush/lib/types';
@@ -66,10 +66,18 @@ const nullify = (arr: any, key: string, value: any):any => {
   return arr;
 }
 
+const chartTheme = buildChartTheme({
+  backgroundColor: 'white',
+  colors: ['#84B2C6', '#0D589E'],
+  tickLength: 5,
+  gridColor: 'grey',
+  gridColorDark: 'black'
+});
+
 const TimeSeriesBrush = ({ data, width, onDateRangeSelect }:XYBrushProps<Weather>) => {
   const brushRef = useRef(null);
 
-  const brushColor = '#99AACC';
+  const brushColor = '#84B2C6';
   const brushHeight = 100;
   const axisHeight = 25;
   const brushXScale = scaleTime({
@@ -141,23 +149,20 @@ export default function TimeSeries({ station, start, end, onDateRangeSelect }:Ti
     }
   }, [station])
 
-  const scales = {
-    xScale: { type: 'time' },
-    yScale: { type: 'linear' },
-  }
-
   return (
     <div className={timeseries}>
-      <XYChart height={400} {...scales}>
+      <XYChart height={400} theme={chartTheme} xScale={{ type: 'time' }} yScale={{ type: 'linear' }}>
         <Axis orientation='bottom' numTicks={10} />
         <Axis orientation='left' />
         <Grid columns={false} numTicks={4} />
         <AreaSeries
           dataKey='High/Low Band'
           data={filteredWeather}
+          fillOpacity={0.5}
           xAccessor={d => d.date}
           yAccessor={d => d.TMAX}
           y0Accessor={d => d.TMIN}
+          renderLine={false}
         />
         <LineSeries
           dataKey='Avg Line'
