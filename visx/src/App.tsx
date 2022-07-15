@@ -4,11 +4,14 @@ import { dbEffect } from './db-effect'
 import { appWrapper, header, stationSelect } from './styles.css'
 import TimeSeries from './TimeSeries'
 
+const days = (n:number) => n * 24 * 60 * 60 * 1000;
+const dateFormat = (d:Date|undefined) => d ? d.toLocaleDateString('default') : '--';
+
 function App() {
   const [station, setStation] = useState<Station | undefined>(undefined)
   const [stations, setStations] = useState<DuckResult<Station> | undefined>(undefined)
-  const [start, setStart] = useState<Date | undefined>(undefined)
-  const [end, setEnd] = useState<Date | undefined>(undefined)
+  const [start, setStart] = useState<Date | undefined>(new Date(Date.now() - days(365)))
+  const [end, setEnd] = useState<Date | undefined>(new Date())
 
   const stationForId = (id: string):Station|undefined => {
     return stations?.rows.find(s => s.id === id);
@@ -31,8 +34,11 @@ function App() {
             <option key={s.id} value={s.id}>{s.name}</option>
           ))}
         </select>
+        {start && end &&
+          (<span>{dateFormat(start)}&mdash;{dateFormat(end)}</span>)
+        }
       </div>
-      <TimeSeries station={station} start={start} end={end} onDateRangeSelect={(start, end) => {
+      <TimeSeries station={station} start={start} end={end} onDateRangeSelect={(start:Date, end:Date) => {
         setStart(start);
         setEnd(end);
       }}/>

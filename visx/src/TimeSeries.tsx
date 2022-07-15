@@ -1,10 +1,9 @@
-import { useState, useContext, useRef, useMemo } from 'react'
+import { useState, useRef, useMemo } from 'react'
 import {
   Axis,
   Grid,
   LineSeries,
   AreaSeries,
-  DataContext,
   XYChart,
   Tooltip,
   buildChartTheme
@@ -29,6 +28,8 @@ interface TimeSeriesProps {
 interface XYBrushProps<T> {
   data: DuckResult<T>|undefined,
   width: number,
+  start?: Date,
+  end?: Date,
   onDateRangeSelect?: Function;
 }
 
@@ -74,21 +75,32 @@ const chartTheme = buildChartTheme({
   gridColorDark: 'black'
 });
 
-const TimeSeriesBrush = ({ data, width, onDateRangeSelect }:XYBrushProps<Weather>) => {
+const TimeSeriesBrush = ({ data, width, start, end, onDateRangeSelect }:XYBrushProps<Weather>) => {
   const brushRef = useRef(null);
 
   const brushColor = '#84B2C6';
   const brushHeight = 100;
   const axisHeight = 25;
+  const xDomain:[Date, Date] = extent(data?.rows || [], (d:Weather) => d.date) as [Date, Date];
+
   const brushXScale = scaleTime({
     range: [0, width],
-    domain: extent(data?.rows || [], (d:Weather) => d.date) as [Date, Date],
+    domain: xDomain,
   })
 
   const brushYScale = scaleLinear({
     range: [brushHeight-axisHeight, 0],
     domain: extent(data?.rows || [], (d:Weather) => d.value) as [number, number],
   })
+
+  const initialPosition = useMemo(() => {
+    const startVal = new Date(Math.max(+(start || xDomain[0]), +xDomain[0]));
+    const endVal = new Date(Math.min(+(end || xDomain[1]), +xDomain[1]));
+    return {
+      start: { x: brushXScale(startVal) },
+      end: { x: brushXScale(endVal) },
+    }
+  }, [brushXScale]);
 
   return <svg height={brushHeight} width={width}>
     <AreaClosed
@@ -107,6 +119,7 @@ const TimeSeriesBrush = ({ data, width, onDateRangeSelect }:XYBrushProps<Weather
       handleSize={8}
       resizeTriggerAreas={['left', 'right']}
       innerRef={brushRef}
+      initialBrushPosition={initialPosition}
       onChange={(domain: Bounds | null) => {
         if (!domain) return;
         if (onDateRangeSelect) {
@@ -148,6 +161,8 @@ export default function TimeSeries({ station, start, end, onDateRangeSelect }:Ti
       setAllWeather(await db.weatherForStationForRange(station));
     }
   }, [station])
+
+  const allWeatherXDomain = extent((allWeather?.rows || []), d => d.date) as [Date, Date];
 
   return (
     <div className={timeseries}>
@@ -192,15 +207,19 @@ export default function TimeSeries({ station, start, end, onDateRangeSelect }:Ti
           )}
         />
       </XYChart>
-      <ParentSize>
-        {parent => (
-          <TimeSeriesBrush
-            width={parent.width}
-            data={monthlyWeather}
-            onDateRangeSelect={onDateRangeSelect}
-          />
-        )}
-      </ParentSize>
+      {monthlyWeather &&
+        <ParentSize>
+          {parent => (
+            <TimeSeriesBrush
+              width={parent.width}
+              data={monthlyWeather}
+              start={start}
+              end={end}
+              onDateRangeSelect={onDateRangeSelect}
+            />
+          )}
+        </ParentSize>
+      }
     </div>
   );
 }
