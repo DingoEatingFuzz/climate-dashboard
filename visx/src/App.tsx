@@ -1,8 +1,9 @@
 import { useState } from 'react'
 import './App.css'
 import { dbEffect } from './db-effect'
-import { appWrapper, header, stationSelect } from './styles.css'
+import { appWrapper, header, stationSelect, flexGroup, averages } from './styles.css'
 import TimeSeries from './TimeSeries'
+import Averages from './Averages'
 
 const days = (n:number) => n * 24 * 60 * 60 * 1000;
 const dateFormat = (d:Date|undefined) => d ? d.toLocaleDateString('default') : '--';
@@ -42,8 +43,8 @@ function App() {
         setStart(start);
         setEnd(end);
       }}/>
-      <div className="FlexGroup">
-        {/* <Averages station={station} start={start} end={end} /> */}
+      <div className={flexGroup}>
+        <Averages station={station} className={averages} />
         {/* <Map station={station} /> */}
         {/* <Quantized station={station} start={start} end={end} /> */}
         {/* <Table station={station} start={start} end={end} /> */}
