@@ -16,6 +16,7 @@ import { AxisBottom } from '@visx/axis';
 import { AreaClosed } from '@visx/shape';
 import { group, extent, bisector, InternMap } from 'd3-array';
 import { dbEffect } from './db-effect'
+import pivot from './pivot';
 import { timeseries, timeseriesTooltip, timeseriesTooltipDt, timeseriesTooltipDd } from './styles.css'
 
 interface TimeSeriesProps {
@@ -45,18 +46,6 @@ const formatDate = (date:Date) => new Intl.DateTimeFormat().format(date);
 const formatTemperature = (temp:number|undefined) => temp == null
   ? '--'
   : (temp / 10).toLocaleString('default', { maximumFractionDigits: 2 }) + '° C';
-
-const pivot = (map: InternMap, key: string, on: string, rename: string):any => {
-  return Array.from(map.keys()).reduce((arr:object[], idx:any) => {
-    const record = map.get(idx);
-    const pivots = record.reduce((obj:any, val:any) => {
-      obj[val[key]] = val[on];
-      return obj;
-    }, {});
-    arr.push({ ...pivots, [rename]: idx });
-    return arr;
-  }, []);
-}
 
 const nullify = (arr: any, key: string, value: any):any => {
   arr.forEach((record:any) => {
