@@ -31,6 +31,13 @@ declare class Weather implements IDuckRecord {
   value: number;
 }
 
+declare class MonthlyWeather implements IDuckRecord {
+  id: string;
+  month: string;
+  element: Element;
+  value: number;
+}
+
 declare type DuckResult<Type> = {
   columns: string[],
   rows: Array<Type>,
