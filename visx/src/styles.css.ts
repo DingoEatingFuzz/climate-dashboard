@@ -42,11 +42,11 @@ export const timeseriesTooltipDd = style({
 });
 
 export const averages = style({
+  boxSizing: 'border-box',
   padding: 15,
   width: '33%',
   height: 500,
 });
-
 
 export const dlGrid = style({
   display: 'grid',
@@ -95,4 +95,11 @@ export const avgTextAnchorStart = style({
 export const avgTextRain = style({
   fontSize: 10,
   alignmentBaseline: 'middle',
+});
+
+export const mapStyle = style({
+  boxSizing: 'border-box',
+  padding: 15,
+  width: '67%',
+  height: 500,
 });
