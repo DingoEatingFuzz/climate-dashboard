@@ -62,3 +62,37 @@ export const dlGridDd = style({
   gridColumn: 2,
   margin: 0,
 });
+
+export const inlineChart = style({
+  display: 'inline',
+  height: 'auto',
+  width: '100%',
+  overflow: 'visible',
+});
+
+export const avgBar = style({
+  stroke: 'rgba(0, 0, 0, 0.2)',
+  strokeWidth: 1,
+});
+
+export const avgMidpoint = style({
+  stroke: 'rgba(0, 0, 0, 0.2)',
+  strokeWidth: 1,
+});
+
+export const avgTextAnchorEnd = style({
+  fontSize: 12,
+  textAnchor: 'end',
+  alignmentBaseline: 'middle',
+});
+
+export const avgTextAnchorStart = style({
+  fontSize: 12,
+  textAnchor: 'start',
+  alignmentBaseline: 'middle',
+});
+
+export const avgTextRain = style({
+  fontSize: 10,
+  alignmentBaseline: 'middle',
+});
