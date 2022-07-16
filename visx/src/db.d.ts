@@ -9,9 +9,9 @@ declare enum Element {
 
 declare class Station implements IDuckRecord {
   id: string;
-  lat: Number;
-  lon: Number;
-  elevation: Number;
+  lat: number;
+  lon: number;
+  elevation: number;
   state: string;
   name: string;
   gsn: boolean;

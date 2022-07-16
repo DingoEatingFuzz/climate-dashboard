@@ -33,7 +33,7 @@ function App() {
         <h1 className={header}>{station?.name}</h1>
         <select className={stationSelect} onChange={e => setStation(stationForId(e.target.value))}>
           {stations && stations.rows.filter(s => s.sampled).map(s => (
-            <option key={s.id} value={s.id}>{s.name}</option>
+            <option key={s.id} value={s.id} selected={s.id === station?.id}>{s.name}</option>
           ))}
         </select>
         {start && end &&
@@ -46,7 +46,7 @@ function App() {
       }}/>
       <div className={flexGroup}>
         <Averages station={station} className={averages} />
-        {stations && <MapViz stations={stations} className={mapStyle} />}
+        {stations && <MapViz stations={stations} station={station} className={mapStyle} onStationSelect={setStation} />}
         {/* <Quantized station={station} start={start} end={end} /> */}
         {/* <Table station={station} start={start} end={end} /> */}
       </div>
