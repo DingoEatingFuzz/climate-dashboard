@@ -103,3 +103,10 @@ export const mapStyle = style({
   width: '67%',
   height: 500,
 });
+
+export const quantized = style({
+  boxSizing: 'border-box',
+  padding: 15,
+  width: '33%',
+  height: 500,
+});

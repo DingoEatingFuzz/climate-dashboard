@@ -15,7 +15,7 @@ interface PivotedAverage {
 }
 
 interface AveragesProps {
-  station: Station|undefined;
+  station?: Station;
   width?: number;
   className?: string;
 }

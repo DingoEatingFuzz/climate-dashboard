@@ -1,6 +1,6 @@
 declare interface IDuckRecord {};
 
-declare enum Element {
+declare enum WeatherElement {
   TAVG = 'TAVG',
   TMIN = 'TMIN',
   TMAX = 'TMAX',
@@ -27,14 +27,14 @@ declare class Weather implements IDuckRecord {
   month: Number
   day: Number;
   date: Date;
-  element: Element;
+  element: WeatherElement;
   value: number;
 }
 
 declare class MonthlyWeather implements IDuckRecord {
   id: string;
   month: string;
-  element: Element;
+  element: WeatherElement;
   value: number;
 }
 
