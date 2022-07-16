@@ -1,13 +1,8 @@
-import { default as React, useState, useEffect, useMemo } from 'react'
-import { Bar, Line } from '@visx/shape';
+import { useState, useEffect, useMemo } from 'react'
 import { ParentSize } from '@visx/responsive';
 import { CustomProjection, Graticule } from '@visx/geo';
-import { scaleLinear, scaleQuantize } from '@visx/scale';
 import { geoNaturalEarth1 } from 'd3-geo';
 import * as topojson from 'topojson-client';
-import { dbEffect } from './db-effect';
-import pivot from './pivot';
-import { mapStyle } from './styles.css';
 
 interface MapProps {
   width?: number;
