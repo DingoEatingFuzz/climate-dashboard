@@ -45,7 +45,6 @@ export const averages = style({
   boxSizing: 'border-box',
   padding: 15,
   width: '33%',
-  height: 500,
 });
 
 export const dlGrid = style({
@@ -109,4 +108,16 @@ export const quantized = style({
   padding: 15,
   width: '33%',
   height: 500,
+});
+
+export const quantizedLegend = style({
+  width: 100,
+  fontSize: 14,
+  paddingLeft: 10,
+  paddingRight: 10,
+});
+
+export const flex = style({
+  display: 'flex',
+  alignItems: 'flex-start',
 });
