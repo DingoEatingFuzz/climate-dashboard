@@ -4,6 +4,7 @@ export const appWrapper = style({
   width: '100%',
   maxWidth: '1200px',
   margin: 'auto',
+  paddingBottom: 30,
 });
 
 export const stationSelect = style({
@@ -19,6 +20,7 @@ export const header = style({
 export const flexGroup = style({
   display: 'flex',
   flexWrap: 'wrap',
+  alignItems: 'flex-start',
 });
 
 export const timeseries = style({
