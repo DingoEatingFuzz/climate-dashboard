@@ -32,9 +32,9 @@ function App() {
     <div className={appWrapper}>
       <div className="Header">
         <h1 className={header}>{station?.name}</h1>
-        <select className={stationSelect} onChange={e => setStation(stationForId(e.target.value))}>
+        <select value={station?.id} className={stationSelect} onChange={e => setStation(stationForId(e.target.value))}>
           {stations && stations.rows.filter(s => s.sampled).map(s => (
-            <option key={s.id} value={s.id} selected={s.id === station?.id}>{s.name}</option>
+            <option key={s.id} value={s.id}>{s.name}</option>
           ))}
         </select>
         {start && end &&
