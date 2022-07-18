@@ -121,3 +121,29 @@ export const flex = style({
   display: 'flex',
   alignItems: 'flex-start',
 });
+
+export const table = style({
+  width: '67%',
+  borderCollapse: 'collapse',
+});
+
+export const tableTd = style({
+  border: '1px solid #DDD',
+  padding: 8,
+});
+
+export const tableHead = style({
+  background: '#F6F6F6',
+});
+
+export const tableTh = style({
+  border: '1px solid #DDD',
+  padding: 8,
+  textAlign: 'left',
+});
+
+export const tableChart = style({
+  width: 150,
+  height: 30,
+  display: 'block',
+});

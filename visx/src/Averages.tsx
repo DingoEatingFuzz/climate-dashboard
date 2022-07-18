@@ -2,7 +2,7 @@ import { default as React, useState, useContext, useRef, useMemo } from 'react'
 import { Bar, Line } from '@visx/shape';
 import { ParentSize } from '@visx/responsive';
 import { scaleLinear, scaleQuantize } from '@visx/scale';
-import { group, extent, bisector, InternMap } from 'd3-array';
+import { group, extent } from 'd3-array';
 import { schemeSpectral } from 'd3-scale-chromatic';
 import { dbEffect } from './db-effect';
 import pivot from './pivot';

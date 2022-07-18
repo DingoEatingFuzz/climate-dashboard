@@ -1,11 +1,12 @@
 import { useState } from 'react'
 import './App.css'
 import { dbEffect } from './db-effect'
-import { appWrapper, header, stationSelect, flexGroup, averages, mapStyle, quantized } from './styles.css'
+import { appWrapper, header, stationSelect, flexGroup, averages, mapStyle, quantized, table } from './styles.css'
 import TimeSeries from './TimeSeries'
 import Averages from './Averages'
 import MapViz from './Map'
 import Quantized from './Quantized'
+import Table from './Table'
 
 const days = (n:number) => n * 24 * 60 * 60 * 1000;
 const dateFormat = (d:Date|undefined) => d ? d.toLocaleDateString('default') : '--';
@@ -49,7 +50,7 @@ function App() {
         <Averages station={station} className={averages} />
         {stations && <MapViz stations={stations} station={station} className={mapStyle} onStationSelect={setStation} />}
         {start && end && <Quantized station={station} start={start} end={end} className={quantized} />}
-        {/* <Table station={station} start={start} end={end} /> */}
+        {start && end && <Table station={station} start={start} end={end} className={table} />}
       </div>
     </div>
   )
